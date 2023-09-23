@@ -52,15 +52,19 @@ def creat_message(lang_name, message, is_first):
                 {"role": "system", "content": "말투 : 친절하게, 전문적이게"}]
 
     if is_first == 'false':
-        messages.append({"role": "system", "content": "유저가 말하는 내용을 1점에서 100점까지 점수로 판단해야해. 문장 가장 처음은 무조건 점수부터 출력해"},
-                        {"role": "system", "content": "유저가 말하는 내용에 대한 점수는 데이터의 정확도로 판단해. \"모르겠음\"의 의미가 포함되면 0점이야."},
-                        {"role": "system", "content": "네가 판단한 점수는 오직 \"점수: N점\"이라고만 말해."},
-                        {"role": "system",
-                         "content": "유저가 말한 내용에 대해 '답변'과 '키워드'와 '꼬리질문'을 말해.\n - 답변 : {답변}\n - 키워드: {키워드}\n - 꼬리질문: {꼬리질문}"},
-                        {"role": "user", "content": message})
+        messages.append(
+            {"role": "system", "content": "유저가 말하는 내용을 1점에서 100점까지 점수로 판단해야해. 문장 가장 처음은 무조건 점수부터 출력해"},
+            {"role": "system", "content": "유저가 말하는 내용에 대한 점수는 데이터의 정확도로 판단해. \"모르겠음\"의 의미가 포함되면 0점이야."},
+            {"role": "system", "content": "네가 판단한 점수는 오직 \"점수: N점\"이라고만 말해."},
+            {"role": "system",
+             "content": "유저가 말한 내용에 대해 '답변'과 '키워드'와 '꼬리질문'을 말해.\n - 답변 : {답변}\n - 키워드: {키워드}\n - 꼬리질문: {꼬리질문}"},
+            {"role": "user", "content": message}
+        )
     else:
-        messages.append({"role": "system", "content": "면접 질문 내용만 말하고 수식어구 및 설명은 없애."},
-                        {"role": "user", "content": lang_name + "에 대한 면접 질문 한개만 말해줘"})
+        messages.append(
+            {"role": "system", "content": "면접 질문 내용만 말하고 수식어구 및 설명은 없애. \n - 질문 : {질문 내용}"},
+            {"role": "user", "content": lang_name + "에 대한 면접 질문 한개만 말해줘"}
+        )
 
         return messages
 
@@ -79,7 +83,7 @@ def parse_message(completion_result, user_id, lang_group_id):
     for line in lines:
         if line.startswith("점수:"):
             score = line.split(":")[1].replace("점", "").strip()
-        elif line.startswith("답변:"):
+        elif line.startswith("답변:") or line.startswith("질문:"):
             answer = line.split(":")[1].strip()
         elif line.startswith("키워드:"):
             keyword = line.split(":")[1].strip()
