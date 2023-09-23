@@ -69,7 +69,7 @@ def creat_message(lang_name, message, is_first):
 
 def parse_message(completion_result, user_id, lang_group_id):
     # 응답을 위한 값 초기화
-    score = None
+    score = 0
     answer = None
     keyword = None
     tail_question = None
