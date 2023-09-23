@@ -2,7 +2,7 @@
 
 from django.urls import path
 from rest_framework import routers
-from health_check import views
+from common.health_check import views
 
 router = routers.DefaultRouter()
 

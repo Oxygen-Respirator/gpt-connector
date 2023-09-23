@@ -15,7 +15,7 @@ environ.Env.read_env(
 SECRET_KEY = env('DJANGO0_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -30,8 +30,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_swagger',
-    'open_ai',
-    'health_check'
+    'domain.completion',
+    'domain.message_queue',
+    'common.health_check'
+
 ]
 
 REST_FRAMEWORK = {

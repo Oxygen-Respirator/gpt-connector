@@ -3,4 +3,4 @@ from rest_framework import serializers, viewsets
 
 class OpenAiConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'open_ai'
+    name = 'domain.completion'
