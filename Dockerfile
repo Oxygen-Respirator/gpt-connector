@@ -15,3 +15,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # 프로젝트의 모든 파일을 컨테이너에 복사
 COPY . .
+
+# run.sh에 실행 권한 부여
+RUN chmod +x run.sh
