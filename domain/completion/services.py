@@ -15,7 +15,7 @@ def completion(request):
 
     user_id = request_dict['userId']
     message = request_dict['message']
-    is_first = request_dict['isFirst']
+    is_first = request_dict['first']
 
     lang_group_id = request_dict['lang']
     lang_name = LangGroup.objects.get(id=lang_group_id).name
