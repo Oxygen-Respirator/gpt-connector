@@ -2,21 +2,15 @@ import json
 from asgiref.sync import sync_to_async
 import openai
 
-from domain.completion.models import LangGroup
-from domain.completion.serializer import ChatMessageSerializer
-
 
 @sync_to_async
 def completion(request):
     # request 처리
     request_dict = json.loads(request)
 
-    user_id = request_dict['userId']
     message = request_dict['message']
     is_first = request_dict['first']
-
-    lang_group_id = request_dict['lang']
-    lang_name = LangGroup.objects.get(id=lang_group_id).name
+    lang_name = request_dict['lang']
 
     # OpenAI API 호출을 위한 messages 생성
     messages = creat_message(lang_name, message, is_first)
@@ -27,20 +21,8 @@ def completion(request):
     # OpenAI API 호출
     completion_result = call_openai["choices"][0]["message"]["content"]
 
-    # OpenAI API 호출 결과를 DB에 저장할 수 있는 형태로 가공
-    data = parse_message(completion_result, user_id, lang_group_id)
-
-    # DB에 저장
-    serializer = ChatMessageSerializer(data=data)
-
-    if serializer.is_valid():
-        serializer.save()
-    else:
-        print(serializer.errors)
-
-    # 응답 포맷을 맞추기 위해 데이터 가공
-    del data['users_id']
-    del data['lang_group_id']
+    # OpenAI API 호출 결과를 응답 형태로 가공
+    data = parse_message(completion_result)
 
     return json.dumps(data)
 
@@ -67,7 +49,7 @@ def creat_message(lang_name, message, is_first):
         return messages
 
 
-def parse_message(completion_result, user_id, lang_group_id):
+def parse_message(completion_result):
     # 응답을 위한 값 초기화
     score = 0
     answer = None
@@ -75,7 +57,7 @@ def parse_message(completion_result, user_id, lang_group_id):
     tail_question = None
     etc = []
 
-    # 결과 메세지 각 라인별로 처리
+    # 결과 메세지 각 라인 별로 처리
     lines = completion_result.split('\n')
 
     for line in lines:
@@ -90,13 +72,11 @@ def parse_message(completion_result, user_id, lang_group_id):
         else:
             etc.append(line.strip())
 
-    # etc를 하나의 문자열로 합침
+    # etc 를 하나의 문자 열로 합침
     etc = "\n".join(etc).strip() if etc else None
 
     # 가공을 마친 데이터 리턴
     return {
-        'users_id': user_id,
-        'lang_group_id': lang_group_id,
         'score': score,
         'answer': answer,
         'keyword': keyword,
