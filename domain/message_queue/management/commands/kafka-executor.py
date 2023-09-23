@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 import asyncio
 
-from domain.message_queue.utils import Kafka
+from domain.message_queue.kafka_utils import Kafka
 
 
 class Command(BaseCommand):

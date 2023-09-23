@@ -2,7 +2,6 @@ import environ
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
 import asyncio
 
-
 from domain.completion import services
 
 
@@ -46,7 +45,7 @@ class Kafka:
         await self.consumer.start()
 
     async def consume_message(self):
-        timeout = 0.5
+        timeout = 0.01
         while True:
             try:
                 msg = await asyncio.wait_for(self.consumer.getone(), timeout)
@@ -63,7 +62,7 @@ class Kafka:
                 await self.produce_message({'correlationId': correlation_id}, '', result)
                 await self.close_producer()
             except asyncio.TimeoutError:
-                print('Message does not exist')
+                pass
 
     async def close_consumer(self):
         await self.consumer.stop()
