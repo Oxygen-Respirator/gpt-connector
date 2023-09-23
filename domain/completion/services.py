@@ -15,11 +15,13 @@ def completion(request):
     # OpenAI API 호출을 위한 messages 생성
     messages = creat_message(lang_name, message, is_first)
 
-    call_openai = openai.ChatCompletion.create(model="gpt-3.5-turbo-0613", messages=messages, temperature=0,
+    call_openai = openai.ChatCompletion.create(model="gpt-3.5-turbo-0613", messages=messages, temperature=1,
                                                max_tokens=2048)
 
     # OpenAI API 호출
     completion_result = call_openai["choices"][0]["message"]["content"]
+
+    print(completion_result)
 
     # OpenAI API 호출 결과를 응답 형태로 가공
     data = parse_message(completion_result)
