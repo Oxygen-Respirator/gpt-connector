@@ -16,7 +16,7 @@ class Kafka:
         self.producer = Producer(producer_conf)
 
     def produce_message(self, key, value):
-        self.producer.produce('chat-django', key=key.encode('utf-8'), value=value.encode('utf-8'), callback=self.delivery_report)
+        self.producer.produce('chat', key=key.encode('utf-8'), value=value.encode('utf-8'), callback=self.delivery_report)
         self.producer.flush()
 
     def delivery_report(self, err, msg):
