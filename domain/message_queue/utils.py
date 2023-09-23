@@ -1,7 +1,9 @@
 import environ
-from confluent_kafka import Producer, Consumer, KafkaError, KafkaException
+from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
+import asyncio
+
+
 from domain.completion import services
-import time
 
 
 def delivery_report(err, msg):
@@ -15,64 +17,56 @@ class Kafka:
     def __init__(self):
         self.consumer = None
         self.producer = None
+
         env = environ.Env()
         environ.Env.read_env()
 
         self.broker_address = env('KAFKA_ADDRESS')
 
-    def setup_producer(self):
-        producer_conf = {
-            'bootstrap.servers': self.broker_address,
-        }
+    async def setup_producer(self):
+        self.producer = AIOKafkaProducer(
+            bootstrap_servers=self.broker_address,
+        )
+        await self.producer.start()
 
-        self.producer = Producer(producer_conf)
+    async def produce_message(self, headers, key, value):
+        await self.producer.send(
+            'response_chat',
+            key=key.encode('UTF-8'),
+            value=value.encode('UTF-8'),
+            headers=[(k, v.encode('UTF-8')) for k, v in headers.items()]
+        )
 
-    def produce_message(self, headers, key, value):
-        self.producer.produce('response_chat', headers=headers, key=key.encode('UTF-8'), value=value.encode('UTF-8'),
-                              callback=delivery_report)
-        self.producer.flush()
+    async def setup_consumer(self):
+        self.consumer = AIOKafkaConsumer(
+            'request_chat',
+            bootstrap_servers=self.broker_address,
+            group_id='gpt_django',
+        )
+        await self.consumer.start()
 
-    def setup_consumer(self):
-        consumer_conf = {
-            'bootstrap.servers': self.broker_address,
-            'group.id': 'gpt',
-            'auto.offset.reset': 'earliest'
-        }
-
-        self.consumer = Consumer(consumer_conf)
-        self.consumer.subscribe(['request_chat'])
-
-    def consume_message(self):
+    async def consume_message(self):
+        timeout = 0.5
         while True:
-            msg = self.consumer.poll(1)
-
-            if msg is None:
-                print('Message does not exist')
-                continue
-
-            if msg.error():
-                print(f"Consumer error: {msg.error()}")
-                raise KafkaException(msg.error())
-            else:
-                message = msg.value().decode('utf-8')
+            try:
+                msg = await asyncio.wait_for(self.consumer.getone(), timeout)
+                message = msg.value.decode('utf-8')
                 print(f"Received: {message}")
 
                 # 헤더 처리
-                headers = msg.headers()
+                headers = dict(msg.headers)
+                correlation_id = headers.get('correlationId', b'').decode('UTF-8')
 
-                if headers is None:
-                    continue
+                result = await services.completion(message)
 
-                correlation_id = None
-                for key, value in headers:
-                    if key == 'correlationId':
-                        correlation_id = value.decode('utf-8')
-                        break
+                await self.setup_producer()
+                await self.produce_message({'correlationId': correlation_id}, '', result)
+                await self.close_producer()
+            except asyncio.TimeoutError:
+                print('Message does not exist')
 
-                result = services.completion(message)
+    async def close_consumer(self):
+        await self.consumer.stop()
 
-                self.setup_producer()
-                self.produce_message({'correlationId': correlation_id}, '', result)
-
-    def close_consumer(self):
-        self.consumer.close()
+    async def close_producer(self):
+        await self.producer.stop()

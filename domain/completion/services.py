@@ -1,13 +1,14 @@
 import json
 from collections import defaultdict
 from django.http import HttpResponseServerError as Http500Error
+from asgiref.sync import sync_to_async
 import openai
 
-# from domain.completion.views import LangGroupViewSet, ChatMessageViewSet
-from domain.completion.models import ChatMessage, LangGroup
+from domain.completion.models import LangGroup
 from domain.completion.serializer import ChatMessageSerializer
 
 
+@sync_to_async
 def completion(request):
     request_dict = json.loads(request)
 
