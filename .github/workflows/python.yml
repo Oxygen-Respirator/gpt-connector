@@ -4,7 +4,7 @@ on:
   #  pull_request:
   #    branches: [ "main" ] # master로 PR시 Actions 작동
   push:
-    branches: [ "main" ] # master로 PR시 Actions 작동
+    branches: [ "main" ] # main으로 push시 Actions 작동
 
 jobs:
   build:
