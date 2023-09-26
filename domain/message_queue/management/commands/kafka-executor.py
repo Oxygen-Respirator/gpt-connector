@@ -21,5 +21,3 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         asyncio.run(self.handle_async(*args, **kwargs))
-
-
