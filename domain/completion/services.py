@@ -16,7 +16,7 @@ def completion(request):
     messages = creat_message(lang_name, message, is_first)
 
     call_openai = openai.ChatCompletion.create(model="gpt-3.5-turbo-0613", messages=messages, temperature=1,
-                                               max_tokens=2048)
+                                               max_tokens=1024)
 
     # OpenAI API 호출
     completion_result = call_openai["choices"][0]["message"]["content"]
